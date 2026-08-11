@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ninja Code Academy - OOP Quiz</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent-orange: #ff6b00;
+      --accent-blue: #00d2ff;
+      --text-main: #e0e0e0;
+      --text-muted: #a0a0a0;
+      --correct: #2e7d32;
+      --incorrect: #c62828;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      border-bottom: 2px solid var(--accent-orange);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      color: var(--accent-orange);
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    #score-board {
+      display: none;
+      background-color: var(--card-bg);
+      border: 2px solid var(--accent-orange);
+      border-radius: 8px;
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
+    }
+
+    #score-board h2 {
+      margin: 0 0 10px 0;
+      color: var(--accent-orange);
+      font-size: 1.8rem;
+    }
+
+    .rank-badge {
+      display: inline-block;
+      background-color: var(--accent-orange);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin: 10px 0;
+    }
+
+    .score-stats {
+      font-size: 1.3rem;
+      margin: 15px 0 5px 0;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      background-color: #333;
+      border-radius: 10px;
+      height: 20px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-blue);
+      transition: width 1s ease-in-out;
+    }
+
+    .eval-feedback {
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 10px;
+    }
+
+    .question-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent-blue);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .question-card h3 {
+      margin-top: 0;
+      color: #ffffff;
+      font-size: 1.1rem;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .option-btn {
+      background-color: #2a2a2a;
+      color: var(--text-main);
+      border: 1px solid #444;
+      padding: 12px 15px;
+      border-radius: 5px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background-color: #383838;
+      border-color: var(--accent-orange);
+    }
+
+    .option-btn.correct {
+      background-color: var(--correct) !important;
+      color: #fff !important;
+      border-color: #4caf50 !important;
+      font-weight: bold;
+    }
+
+    .option-btn.incorrect {
+      background-color: var(--incorrect) !important;
+      color: #fff !important;
+      border-color: #ef5350 !important;
+    }
+
+    .explanation {
+      margin-top: 12px;
+      padding: 10px;
+      background-color: #1a2634;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      color: #b0bec5;
+      display: none;
+    }
+
+    #submit-btn {
+      display: block;
+      width: 100%;
+      background-color: var(--accent-orange);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 30px;
+      transition: background-color 0.2s;
+    }
+
+    #submit-btn:hover {
+      background-color: #e05e00;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🥷 Ninja Code Academy Quiz</h1>
+      <p class="subtitle">Test your OOP skills in JavaScript and Python! Dattebayo!</p>
+    </header>
+
+    <div id="score-board">
+      <h2>Exam Evaluation Complete!</h2>
+      <div id="ninja-rank" class="rank-badge">Rank: Genin</div>
+      <div id="score-text" class="score-stats">0 / 20 Correct (0%)</div>
+      
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      
+      <p id="eval-feedback" class="eval-feedback"></p>
+    </div>
+
+    <form id="quiz-form">
+      <div id="quiz-container"></div>
+      <button type="button" id="submit-btn" onclick="evaluateQuiz()">Finish & View Final Score</button>
+    </form>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        q: "1. In Ninja Code Academy terms, what is a 'Class'?",
+        options: [
+          "An actual living Ninja like Naruto",
+          "A Ninja Scroll / Blueprint that defines ninja traits and actions",
+          "A Jutsu attack like Rasengan",
+          "A village name"
+        ],
+        answer: 1,
+        exp: "A Class is like a Ninja Scroll or Blueprint. It is the template used to create real Ninjas (Instances)."
+      },
+      {
+        q: "2. What is an 'Instance' in Object-Oriented Programming?",
+        options: [
+          "The blueprint scroll",
+          "An actual ninja (Object) created from the blueprint class",
+          "A programming bug",
+          "A list of secret jutsu moves"
+        ],
+        answer: 1,
+        exp: "An Instance is a real ninja summoned into the code world using the Ninja Class blueprint."
+      },
+      {
+        q: "3. Which JavaScript keyword acts like a 'Summoning Jutsu' to create a new instance from a Class?",
+        options: ["summon", "create", "new", "init"],
+        answer: 2,
+        exp: "In JavaScript, we use the 'new' keyword to create a new instance (e.g., new Ninja(...))."
+      },
+      {
+        q: "4. What is the constructor method named in JavaScript?",
+        options: ["init()", "constructor()", "Ninja()", "setup()"],
+        answer: 1,
+        exp: "JavaScript explicitly uses the keyword 'constructor()' to set up new instances."
+      },
+      {
+        q: "5. What special keyword in JavaScript refers to 'this specific ninja' inside a class?",
+        options: ["self", "me", "this", "my"],
+        answer: 2,
+        exp: "In JavaScript, 'this' refers to the specific instance running the code."
+      },
+      {
+        q: "6. What is the constructor method named in Python?",
+        options: ["constructor()", "def init()", "__init__()", "__new__()"],
+        answer: 2,
+        exp: "Python uses '__init__()' (pronounced 'dunder init') as its instance constructor."
+      },
+      {
+        q: "7. In Python, what must be explicitly passed as the first parameter to instance methods?",
+        options: ["this", "self", "ninja", "me"],
+        answer: 1,
+        exp: "Python requires 'self' as the first parameter in instance methods to reference the current instance."
+      },
+      {
+        q: "8. How do you create a new instance of a class called 'Ninja' in Python?",
+        options: [
+          "naruto = new Ninja()",
+          "naruto = Ninja.create()",
+          "naruto = Ninja()",
+          "naruto = summon Ninja()"
+        ],
+        answer: 2,
+        exp: "Unlike JavaScript, Python does not use the 'new' keyword. You call Ninja() directly."
+      },
+      {
+        q: "9. Look at this JS code:\n\nconst sasuke = new Ninja('Sasuke', 'Leaf', 'Chidori');\n\nWhat is 'sasuke'?",
+        options: [
+          "A Class blueprint",
+          "An Instance of Ninja",
+          "A Constructor",
+          "A Method"
+        ],
+        answer: 1,
+        exp: "'sasuke' is an Instance created using the 'new Ninja(...)' class."
+      },
+      {
+        q: "10. Which naming style is standard for methods in JavaScript?",
+        options: [
+          "snake_case (use_jutsu)",
+          "camelCase (useJutsu)",
+          "kebab-case (use-jutsu)",
+          "PASCALCASE (USEJUTSU)"
+        ],
+        answer: 1,
+        exp: "JavaScript conventionally uses camelCase for method names (e.g., useJutsu)."
+      },
+      {
+        q: "11. Which naming style is standard for methods in Python?",
+        options: [
+          "snake_case (use_jutsu)",
+          "camelCase (useJutsu)",
+          "kebab-case (use-jutsu)",
+          "Flatcase (usejutsu)"
+        ],
+        answer: 0,
+        exp: "Python conventionally uses snake_case for method names (e.g., use_jutsu)."
+      },
+      {
+        q: "12. What happens if you try to create two ninjas, Naruto and Sasuke, from the same Ninja Class?",
+        options: [
+          "They share the exact same stats and overwrite each other.",
+          "It throws an error because a Class can only make one Ninja.",
+          "They are two separate instances with their own unique properties.",
+          "Python converts them automatically to JavaScript."
+        ],
+        answer: 2,
+        exp: "A single Class can generate unlimited unique instances, each with distinct values."
+      },
+      {
+        q: "13. What is wrong with this Python code?\n\nclass Ninja:\n    def use_jutsu():\n        print('Rasengan!')",
+        options: [
+          "It is missing 'new'",
+          "It is missing 'self' in the parameter list: def use_jutsu(self):",
+          "Classes cannot contain print statements",
+          "The class name must be lowercase"
+        ],
+        answer: 1,
+        exp: "Python instance methods must include 'self' as their first argument."
+      },
+      {
+        q: "14. What is wrong with this JavaScript code?\n\nclass Ninja {\n  constructor(name) {\n    name = name;\n  }\n}",
+        options: [
+          "It should use 'this.name = name;'",
+          "JavaScript doesn't use constructor()",
+          "You must use 'def' instead of constructor",
+          "Nothing, it works fine."
+        ],
+        answer: 0,
+        exp: "To assign properties to the newly created instance in JS, you must use 'this.propertyName = value'."
+      },
+      {
+        q: "15. True or False: Both Python and JavaScript use the keyword 'class' to define a blueprint.",
+        options: ["True", "False"],
+        answer: 0,
+        exp: "True! Both languages use the 'class' keyword to define class blueprints."
+      },
+      {
+        q: "16. In JavaScript: 'this.village = village'. What does the first 'village' represent?",
+        options: [
+          "A parameter passed to the constructor",
+          "A property attached to the specific Ninja instance",
+          "A global variable",
+          "The name of the class"
+        ],
+        answer: 1,
+        exp: "'this.village' attaches the 'village' property to the created instance object."
+      },
+      {
+        q: "17. What will be the output of this Python code?\n\nclass Ninja:\n    def __init__(self, name):\n        self.name = name\n\nn1 = Ninja('Naruto')\nprint(n1.name)",
+        options: ["Ninja", "self", "Naruto", "Undefined"],
+        answer: 2,
+        exp: "n1 is an instance of Ninja with name set to 'Naruto'. Accessing n1.name returns 'Naruto'."
+      },
+      {
+        q: "18. What is the purpose of parameters passed into constructor / __init__ methods?",
+        options: [
+          "To destroy old ninja instances",
+          "To customize each instance with individual values (like name, village) during creation",
+          "To translate JavaScript into Python automatically",
+          "To lock the class from creating more objects"
+        ],
+        answer: 1,
+        exp: "Parameters allow us to pass individual stats (like 'Naruto' vs 'Sasuke') when instantiating."
+      },
+      {
+        q: "19. Which sentence correctly compares JS 'this' and Python 'self'?",
+        options: [
+          "'this' and 'self' both refer to the current instance, but Python requires 'self' in method definitions while JS handles 'this' implicitly in parameters.",
+          "'this' is used in Python and 'self' is used in JS.",
+          "Both keywords do completely opposite things.",
+          "Neither language uses self-referencing keywords."
+        ],
+        answer: 0,
+        exp: "Both serve the same role (referencing the current object), but Python methods explicitly list 'self' in parameters."
+      },
+      {
+        q: "20. Why do we use OOP (Classes & Instances) instead of writing separate variables for every single Ninja?",
+        options: [
+          "Because classes make code run 1000x faster automatically",
+          "Because it allows us to organize code cleanly into reusable blueprints instead of duplicating code",
+          "Because programming languages don't allow variables",
+          "To convert code into physical ninja scrolls"
+        ],
+        answer: 1,
+        exp: "OOP helps organize complex programs by grouping data and actions into structured, reusable templates."
+      }
+    ];
+
+    const userAnswers = {};
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      questions.forEach((q, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        let formattedQuestion = q.q.replace(/\n/g, '<br>');
+        
+        let html = `<h3>${formattedQuestion}</h3><div class="options">`;
+        
+        q.options.forEach((opt, optIndex) => {
+          html += `<button type="button" class="option-btn" onclick="selectAndEvaluate(${index}, ${optIndex}, this)">${opt}</button>`;
+        });
+
+        html += `</div><div class="explanation" id="exp-${index}">${q.exp}</div>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+      });
+    }
+
+    // Immediate Feedback Evaluation on Selection
+    function selectAndEvaluate(qIndex, selectedOptIndex, clickedBtn) {
+      // Prevent re-selection if already answered
+      if (userAnswers.hasOwnProperty(qIndex)) return;
+
+      userAnswers[qIndex] = selectedOptIndex;
+      const q = questions[qIndex];
+      const card = document.querySelectorAll('.question-card')[qIndex];
+      const buttons = card.querySelectorAll('.option-btn');
+      const exp = document.getElementById(`exp-${qIndex}`);
+
+      buttons.forEach((btn, optIndex) => {
+        btn.disabled = true; // Lock all options for this question
+        
+        // Highlight correct answer in green
+        if (optIndex === q.answer) {
+          btn.classList.add('correct');
+        }
+        // Highlight incorrect selection in red
+        if (selectedOptIndex === optIndex && selectedOptIndex !== q.answer) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      // Show immediate explanation
+      exp.style.display = 'block';
+    }
+
+    // Final Evaluation Scoreboard
+    function evaluateQuiz() {
+      let score = 0;
+      const totalQuestions = questions.length;
+
+      // Make sure unselected questions show correct answers as well
+      questions.forEach((q, index) => {
+        if (!userAnswers.hasOwnProperty(index)) {
+          const card = document.querySelectorAll('.question-card')[index];
+          const buttons = card.querySelectorAll('.option-btn');
+          const exp = document.getElementById(`exp-${index}`);
+          buttons.forEach((btn, optIndex) => {
+            btn.disabled = true;
+            if (optIndex === q.answer) btn.classList.add('correct');
+          });
+          exp.style.display = 'block';
+        } else if (userAnswers[index] === q.answer) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / totalQuestions) * 100);
+      let rank = "Academy Student 📜";
+      let feedback = "Keep reviewing your ninja scrolls and try again!";
+      let rankColor = "#757575";
+
+      if (percentage === 100) {
+        rank = "🍃 Hokage (Legendary)";
+        feedback = "Flawless victory! You have mastered Classes and Instances in both JS and Python!";
+        rankColor = "#ff6b00";
+      } else if (percentage >= 80) {
+        rank = "⚡ Jonin Elite Ninja";
+        feedback = "Outstanding! Your understanding of Object-Oriented Ninja code is super sharp!";
+        rankColor = "#00d2ff";
+      } else if (percentage >= 60) {
+        rank = "🗡️ Chunin Warrior";
+        feedback = "Good job! You understand the basics, but review `this` vs `self` to rank up.";
+        rankColor = "#4caf50";
+      } else if (percentage >= 40) {
+        rank = "🌾 Genin Apprentice";
+        feedback = "You've passed the basic test! Review your notes on constructors and try again.";
+        rankColor = "#ffeb3b";
+      }
+
+      const scoreBoard = document.getElementById('score-board');
+      const scoreText = document.getElementById('score-text');
+      const ninjaRank = document.getElementById('ninja-rank');
+      const progressBar = document.getElementById('progress-bar');
+      const evalFeedback = document.getElementById('eval-feedback');
+
+      scoreText.textContent = `${score} / ${totalQuestions} Correct (${percentage}%)`;
+      ninjaRank.textContent = `Rank: ${rank}`;
+      ninjaRank.style.backgroundColor = rankColor;
+      evalFeedback.textContent = feedback;
+      
+      scoreBoard.style.display = 'block';
+      
+      setTimeout(() => {
+        progressBar.style.width = `${percentage}%`;
+        progressBar.style.backgroundColor = rankColor;
+      }, 100);
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = "0.5";
+      submitBtn.innerText = "Exam Completed";
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
